@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Loop — Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FFFFFF; --surface:#F4F8EF; --ink:#1F4A46; --muted:#566A67; --line:#E3EADB;
+  --accent:#A7D676; --accent-ink:#16230D; --ph1:#EAF1E2; --ph2:#D6E4C6;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+
+:root[data-theme="dark"]{--bg:#10150F; --surface:#182017; --ink:#EEF3EA; --muted:#9AAA9A; --line:#27322A; --accent:#B6E08A; --accent-ink:#10190A; --ph1:#232D22; --ph2:#2F3C2E;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Manrope","Noto Sans KR",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.wrap{max-width:1160px;margin:0 auto;padding:0 20px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header{transition:transform .3s ease}
+header.hide{transform:translateY(calc(-100% - env(safe-area-inset-top,0px)))}
+.bar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;height:100px;max-width:none;padding:0 clamp(20px,3vw,40px)}
+.tools{display:flex;align-items:center;justify-content:flex-end;gap:14px}
+.cur{position:relative;margin-right:6px}
+.cur-btn{display:flex;align-items:center;gap:6px;background:none;border:0;padding:4px 0;color:var(--ink);font-size:12px;letter-spacing:.14em}
+.cur-menu{position:absolute;right:0;top:calc(100% + 8px);margin:0;padding:6px;list-style:none;background:var(--bg);border:1px solid var(--line);border-radius:8px;min-width:180px;box-shadow:0 8px 24px rgba(0,0,0,.08);z-index:20}
+.cur-menu[hidden]{display:none}
+.cur-menu button{display:flex;justify-content:space-between;gap:16px;width:100%;background:none;border:0;border-radius:6px;padding:10px 12px;color:var(--ink);font-size:13px;text-align:left}
+.cur-menu button:hover,.cur-menu button[aria-selected="true"]{background:var(--surface)}
+.cur-menu span:first-child{letter-spacing:.1em;font-weight:600}
+.cur-menu span:last-child{color:var(--muted)}
+
+
+.icon{position:relative;background:none;border:0;padding:4px;color:var(--ink);display:grid;place-items:center}
+.icon b{position:absolute;top:-3px;right:-7px;background:var(--accent);color:var(--accent-ink);min-width:16px;height:16px;border-radius:8px;display:grid;place-items:center;font-size:10px;padding:0 4px}
+.logo{font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-weight:700;font-size:clamp(40px,5vw,64px);letter-spacing:-.01em;text-align:center;color:var(--ink)}
+nav{display:flex;justify-content:safe center;gap:clamp(18px,3vw,40px);padding:0 20px 14px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
+nav::-webkit-scrollbar{display:none}
+nav a{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);opacity:.75;padding-bottom:4px;border-bottom:1.5px solid transparent}
+nav a:hover,nav a[aria-current="page"]{opacity:1;border-bottom-color:var(--accent)}
+
+
+
+.hero{padding:72px 0 40px}
+.hero h1{font-size:clamp(40px,7vw,84px);line-height:1;letter-spacing:-.04em;font-weight:800;margin:0 0 20px;max-width:12ch}
+.hero p{color:var(--muted);font-size:18px;max-width:46ch;margin:0}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin:32px 0 24px}
+.chip{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:8px 16px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:28px 20px;padding-bottom:80px}
+.card{display:block}
+.ph{aspect-ratio:4/5;border-radius:6px;background:linear-gradient(135deg,var(--ph1),var(--ph2));display:grid;place-items:center;color:var(--muted);font-size:13px;overflow:hidden;position:relative}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.tag{position:absolute;left:12px;top:12px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px}
+.card .meta{display:flex;justify-content:space-between;gap:12px;margin-top:12px;font-size:15px}
+.card .name{font-weight:600}
+.card .cat{color:var(--muted);font-size:13px}
+.card:hover .name{text-decoration:underline;text-underline-offset:3px}
+
+.crumb{padding:24px 0;color:var(--muted);font-size:14px}
+.crumb a:hover{color:var(--ink)}
+.detail{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;padding-bottom:80px}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gallery .ph:first-child{grid-column:1/-1;aspect-ratio:1/1}
+.gallery .ph{aspect-ratio:1/1}
+.info{align-self:start;position:sticky;top:160px}
+.info h1{font-size:clamp(30px,4vw,44px);letter-spacing:-.03em;line-height:1.1;margin:0 0 8px}
+.price{font-size:24px;font-weight:600;margin:0 0 20px}
+.desc{color:var(--muted);max-width:52ch;margin:0 0 28px}
+.label{font-size:13px;font-weight:600;margin-bottom:10px;display:block}
+.swatches{display:flex;gap:10px;margin-bottom:24px}
+.sw{width:34px;height:34px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+.qty{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;margin-bottom:24px;background:var(--surface)}
+.qty button{width:40px;height:40px;border:0;background:none;color:var(--ink);font-size:18px}
+.qty span{min-width:28px;text-align:center;font-weight:600}
+.actions{display:grid;gap:12px;max-width:420px}
+.btn{height:54px;border-radius:999px;font-weight:600;font-size:16px;border:1.5px solid var(--ink);transition:transform .15s}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.specs{margin-top:36px;border-top:1px solid var(--line);max-width:420px}
+.specs div{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.specs dt{color:var(--muted)} .specs dd{margin:0;font-weight:500}
+
+.h-hero{position:relative;min-height:calc(100svh - 140px);display:flex;align-items:flex-end}
+/* Replace the gradient below with your brand photo: background:url("...") center/cover; */
+.h-bg{position:absolute;inset:0;background:linear-gradient(160deg,var(--ph1),var(--ph2))}
+.h-inner{position:relative;padding-bottom:64px;padding-top:80px}
+.h-hero h1{font-size:clamp(44px,9vw,128px);line-height:.95;letter-spacing:-.045em;font-weight:800;margin:0 0 24px}
+.h-hero p{font-size:clamp(16px,2vw,20px);max-width:44ch;margin:0 0 32px}
+.h-cta{display:inline-flex;align-items:center;justify-content:center;padding:0 32px}
+.story{display:grid;grid-template-columns:1fr 2fr;gap:48px;padding-top:80px;padding-bottom:80px;background:var(--ph1);box-shadow:0 0 0 100vmax var(--ph1);clip-path:inset(0 -100vmax)}
+.story h2{font-size:15px;font-weight:600;margin:6px 0 0;color:var(--muted)}
+.story .lead{font-size:clamp(20px,2.3vw,30px);line-height:1.4;letter-spacing:-.015em;font-weight:500;margin:0;max-width:34em}
+.values{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;padding-top:56px;padding-bottom:96px}
+.values h3{font-size:20px;margin:0 0 8px;letter-spacing:-.02em}
+.values p{color:var(--muted);margin:0;max-width:34ch}
+.band{display:grid;grid-template-columns:1.4fr 1fr;gap:12px;padding-bottom:96px}
+.band .ph{aspect-ratio:4/3}
+.closing{text-align:center;padding:40px 20px 120px}
+.closing h2{font-size:clamp(32px,5vw,64px);letter-spacing:-.04em;line-height:1.05;margin:0 0 28px}
+.page-head{padding-top:56px}
+.page-head h1{font-size:clamp(36px,5vw,56px);letter-spacing:-.03em;margin:0 0 6px}
+.page-head p{color:var(--muted);margin:0}
+
+@media (max-width:820px){.story{grid-template-columns:1fr;gap:16px;padding:64px 20px}.values{grid-template-columns:1fr;padding-bottom:64px}.band{grid-template-columns:1fr;padding-bottom:64px}}
+.icon.on::after{content:"";position:absolute;top:2px;right:-2px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:1.5px solid var(--bg)}
+.modal{position:fixed;inset:0;background:rgba(10,20,15,.45);display:grid;place-items:center;padding:20px;z-index:30}
+.modal[hidden],.search[hidden]{display:none}
+.sheet{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:12px;width:100%;max-width:400px;padding:28px;position:relative;max-height:100%;overflow:auto}
+.sheet h2{margin:0 0 4px;font-size:26px;letter-spacing:-.02em}
+.sheet .sub{color:var(--muted);font-size:14px;margin:0 0 20px}
+.x{position:absolute;right:14px;top:10px;background:none;border:0;font-size:26px;color:var(--muted)}
+.tabs{display:flex;gap:20px;margin:0 0 20px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:0;padding:0 0 10px;color:var(--muted);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.g-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:48px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font-weight:600}
+.or{text-align:center;color:var(--muted);font-size:12px;margin:16px 0}
+.field{display:block;margin-bottom:12px}
+.field span{display:block;font-size:12px;font-weight:600;margin-bottom:6px}
+.field input{width:100%;height:46px;border:1px solid var(--line);border-radius:8px;padding:0 14px;background:var(--surface);color:var(--ink);font:inherit}
+.sheet .btn{width:100%;margin-top:8px}
+.search{position:relative;border-top:1px solid var(--line);background:var(--bg)}
+.s-top{display:flex;gap:16px;align-items:center;padding:20px clamp(20px,3vw,40px)}
+.s-top input{flex:1;min-width:0;border:0;background:none;font:inherit;font-size:clamp(14px,1.6vw,20px);letter-spacing:.16em;text-transform:uppercase;color:var(--ink);outline:none;text-overflow:ellipsis}
+.s-top input::placeholder{color:var(--muted);opacity:1}
+#sres{position:absolute;left:0;right:0;top:100%;background:var(--bg);border-bottom:1px solid var(--line);max-height:70vh;overflow:auto;padding:0 clamp(20px,3vw,40px)}
+#sres:empty{display:none}
+.s-res{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;margin:20px 0 28px}
+.s-empty{color:var(--muted);margin:20px 0 28px}
+.back{display:inline-flex;align-items:center;gap:8px;color:var(--ink);font-size:14px;letter-spacing:.04em}
+.back:hover{opacity:.7}
+.drawer-bg{position:fixed;inset:0;background:rgba(10,20,15,.45);z-index:30;display:flex;justify-content:flex-end}
+.drawer-bg[hidden]{display:none}
+.drawer{background:var(--bg);color:var(--ink);width:100%;max-width:420px;height:100%;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.d-head{display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--line)}
+.d-head h2{margin:0;font-size:20px}
+.d-body{flex:1;overflow:auto;padding:0 24px}
+.d-foot{padding:20px 24px;border-top:1px solid var(--line)}
+.d-foot .btn{width:100%}
+.d-empty{color:var(--muted);padding:48px 0;text-align:center}
+.ci{display:grid;grid-template-columns:72px 1fr;gap:14px;padding:18px 0;border-bottom:1px solid var(--line)}
+.ci .ph{aspect-ratio:1/1;border-radius:6px}
+.ci .n{font-weight:600}
+.ci .meta-s{display:flex;align-items:center;color:var(--muted);font-size:14px;margin-top:2px}
+.ci .sw-s{width:10px;height:10px;border-radius:50%;margin-right:8px;box-shadow:0 0 0 1px var(--line)}
+.ci .row{display:flex;align-items:center;justify-content:space-between;margin-top:12px}
+.ci .qty{margin:0}
+.ci .qty button{width:32px;height:32px}
+.ci .rm{background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline}
+.total{display:flex;justify-content:space-between;font-weight:600;font-size:17px;margin-bottom:14px}
+.qband{position:relative;margin-bottom:96px}
+.qband .ph{aspect-ratio:21/9;border-radius:0}
+.qband h2{position:absolute;inset:0;display:grid;place-items:center;margin:0;padding:0 20px;font-family:"Playfair Display",Georgia,serif;font-size:clamp(28px,5vw,64px);letter-spacing:-.02em;text-align:center;color:var(--ink)}
+.stories{padding-bottom:96px}
+.sec-t{font-size:15px;font-weight:600;color:var(--muted);margin:0 0 24px}
+.s-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.s-grid .ph{aspect-ratio:4/3;margin-bottom:16px}
+.s-grid h3{margin:0 0 8px;font-size:18px}
+.s-grid p{color:var(--muted);margin:0 0 12px;font-size:14px}
+.more{font-size:13px;letter-spacing:.1em;text-transform:uppercase;border-bottom:1.5px solid var(--accent);padding-bottom:2px}
+.page{max-width:760px;padding-bottom:96px}
+.page h1{font-size:clamp(32px,5vw,52px);letter-spacing:-.03em;margin:0 0 24px}
+.page p{color:var(--muted);max-width:62ch;margin:0 0 16px}
+.page details{border-bottom:1px solid var(--line);padding:16px 0}
+.page details:first-of-type{border-top:1px solid var(--line)}
+.page summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.page details p{margin:12px 0 0}
+.page .note{font-size:12px;margin-top:40px}
+.cform{margin-top:32px;max-width:480px}
+.cform .btn{width:100%;margin-top:8px}
+.field textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:12px 14px;background:var(--surface);color:var(--ink);font:inherit;resize:vertical}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 20px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:10;max-width:90vw}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:820px){
+  .bar{height:72px;grid-template-columns:1fr auto}.bar>span{display:none}.logo{font-size:36px;text-align:left}
+  .detail{grid-template-columns:1fr;gap:28px}
+  .info{position:static}
+  .hero{padding-top:44px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.season{display:grid;grid-template-columns:1fr 1fr;min-height:min(100svh,880px);margin-bottom:96px}
+.season-t{background:var(--surface);display:flex;align-items:center;justify-content:center;padding:64px clamp(24px,6vw,96px)}
+.season-t>div{max-width:520px}
+.season .ph{aspect-ratio:auto;border-radius:0;min-height:100%}
+.season h2{font-size:clamp(28px,3.4vw,52px);font-weight:300;letter-spacing:.14em;text-transform:uppercase;line-height:1.15;margin:0 0 28px}
+.season p{color:var(--ink);max-width:52ch;margin:0 0 20px;font-size:15px}
+.season .btn{margin-top:12px}
+footer{background:var(--ink);color:var(--surface);font-size:13px}
+.news{text-align:center;padding:72px 20px;border-bottom:1px solid rgba(255,255,255,.18)}
+.news h2{font-size:clamp(22px,2.6vw,34px);font-weight:300;letter-spacing:.2em;text-transform:uppercase;margin:0 0 16px}
+.news p{margin:0 0 28px;font-size:13px;opacity:.9}
+.news form{display:flex;gap:16px;justify-content:center;max-width:620px;margin:0 auto}
+.news input{flex:1;min-width:0;height:48px;border:1px solid rgba(255,255,255,.4);border-radius:0;padding:0 16px;background:transparent;color:#fff;font:inherit;font-size:13px}
+.news input::placeholder{color:rgba(255,255,255,.75)}
+.news button{height:48px;padding:0 40px;border:0;border-radius:0;background:#fff;color:var(--ink);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+.marquee{overflow:hidden;border-bottom:1px solid rgba(255,255,255,.18);padding:64px 0}
+.m-track{display:flex;width:max-content;animation:mq 28s linear infinite}
+.m-track span{font-size:clamp(32px,5vw,72px);font-weight:300;letter-spacing:.18em;text-transform:uppercase;white-space:nowrap;padding-right:.9em}
+@keyframes mq{to{transform:translateX(-50%)}}
+.f-links{display:flex;justify-content:space-between;gap:32px;padding:56px clamp(20px,3vw,40px) 40px}
+.f-links div{display:flex;flex-direction:column;gap:14px}
+.f-links div:last-child{text-align:right}
+.f-links a{opacity:.85}
+.f-links a:hover{opacity:1;text-decoration:underline}
+.f-bottom{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:0 clamp(20px,3vw,40px) 32px}
+.f-social{display:flex;gap:22px;margin-bottom:28px}
+.f-social button{background:none;border:0;color:var(--surface);padding:0;display:grid}
+.copy{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
+.pay{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:340px}
+.pay span{background:#fff;color:#222;border-radius:4px;padding:6px 10px;font-size:11px;font-weight:700;letter-spacing:.04em}
+@media (prefers-reduced-motion:reduce){.m-track{animation:none}}
+@media (max-width:820px){.season{grid-template-columns:1fr;min-height:0;margin-bottom:64px}.season .ph{aspect-ratio:4/5;min-height:0}.s-grid{grid-template-columns:1fr}.qband{margin-bottom:64px}.qband .ph{aspect-ratio:4/3}.stories{padding-bottom:64px}.news form{flex-direction:column}.f-bottom{flex-direction:column;align-items:flex-start}.pay{justify-content:flex-start}}
+.btn,.g-btn,.chip,.qty,.tag,.field input,.field textarea,.cur-menu,.sheet{border-radius:2px}
+.btn.primary{background:var(--ink);border-color:var(--ink);color:#fff}
+.btn.primary:hover{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.h-hero h1,.closing h2,.info h1,.page-head h1,.page h1{font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em;line-height:1.05}
+.dots{display:flex;gap:6px;margin-top:8px;opacity:0;transition:opacity .25s}
+.dots i{width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px var(--line)}
+.card:hover .dots{opacity:1}
+.card .ph img{transition:transform .5s}
+.card:hover .ph img{transform:scale(1.04)}
+@media (hover:none){.dots{opacity:1}}
+.acc{margin-top:32px;max-width:420px;border-top:1px solid var(--line)}
+.acc details{border-bottom:1px solid var(--line);padding:14px 0}
+.acc summary{cursor:pointer;font-weight:600;list-style:none;display:flex;justify-content:space-between}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary::after{content:"+";font-weight:400}
+.acc details[open] summary::after{content:"\2212"}
+.acc p{color:var(--muted);font-size:14px;margin:10px 0 0}
+.acc .specs{margin-top:10px;border-top:0}
+.acc .specs div:last-child{border-bottom:0}
+.more-s{padding-bottom:40px}
+.ph{text-align:center;line-height:1.5}
+.card .ph{aspect-ratio:1/1}
+a.more{display:inline-block}
+.slot-l{position:absolute;right:20px;top:16px;font-size:12px;color:var(--muted);text-align:right;line-height:1.5}
+.h-hero.has-img h1,.h-hero.has-img p{color:#fff}
+.h-hero.has-img .h-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.5),rgba(0,0,0,.08))}
+.qband .ph{position:relative}
+.qband .ph span{position:absolute;left:16px;top:12px;font-size:12px;text-align:left}
+.qband.has-img .ph::after{content:"";position:absolute;inset:0;background:rgba(0,0,0,.3)}
+.qband.has-img h2{color:#fff}
+.rv{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+.nf{padding-top:120px;padding-bottom:120px;text-align:center}
+.nf p{color:var(--muted);margin:0 0 24px}
+.checkout{padding-bottom:96px}
+.co-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:56px;align-items:start}
+.co-grid h2,.co-sum h2{font-size:14px;letter-spacing:.1em;text-transform:uppercase;margin:28px 0 14px}
+.co-grid form>h2:first-child,.co-sum h2:first-child{margin-top:0}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field select{width:100%;height:46px;border:1px solid var(--line);border-radius:2px;padding:0 12px;background:var(--surface);color:var(--ink);font:inherit}
+.pay-opt{display:flex;align-items:center;gap:10px;border:1px solid var(--line);padding:14px;margin-bottom:8px;cursor:pointer}
+.pay-opt input{accent-color:var(--ink)}
+.demo-note{font-size:13px;color:var(--muted);margin:12px 0 20px}
+#cof .btn{width:100%}
+.co-sum{background:var(--surface);padding:28px;position:sticky;top:160px}
+.co-row{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 0}
+.co-row .ph{aspect-ratio:1/1;border-radius:2px}
+.co-row .nm{font-weight:600;font-size:14px}
+.co-row .sub{color:var(--muted);font-size:13px}
+.co-line{display:flex;justify-content:space-between;padding:6px 0;font-size:14px}
+.co-line.t{font-weight:600;font-size:17px;border-top:1px solid var(--line);margin-top:8px;padding-top:14px}
+.order{max-width:640px;padding-top:56px;padding-bottom:96px;text-align:center}
+.order .co-sum{position:static;text-align:left;margin:28px 0}
+.check{width:56px;height:56px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-size:26px;margin:0 auto 20px}
+.checkout h1,.order h1,.nf h1{font-family:"Playfair Display",Georgia,"Times New Roman",serif;font-weight:600;letter-spacing:-.01em;line-height:1.05;font-size:clamp(32px,5vw,48px);margin:0 0 24px}
+@media (max-width:820px){.co-grid{grid-template-columns:1fr}.co-sum{position:static;order:-1}.row2{grid-template-columns:1fr}}
+
+/* ===== Target statement, differentiators, team slider, Where to buy ===== */
+.target{padding-top:48px;padding-bottom:0;text-align:center}
+.target p{font-family:"Playfair Display",Georgia,serif;font-size:clamp(18px,2.2vw,26px);line-height:1.35;font-weight:600;letter-spacing:-.01em;max-width:30em;margin:0 auto;color:var(--ink)}
+.hint{color:var(--muted);opacity:.55;font-style:italic;font-weight:400}
+.story>div{min-width:0}
+.diff-l{list-style:none;margin:12px 0 0;padding:0;max-width:34em}
+.diff-l li{display:flex;gap:16px;padding:10px 0;border-top:1px solid var(--line);font-size:14px;color:var(--muted)}
+.diff-l b{color:var(--ink);font-weight:600;min-width:9em}
+.team{padding-bottom:96px}
+.t-origin{font-size:clamp(18px,2vw,24px);line-height:1.5;max-width:42em;margin:0 0 40px;font-weight:500;letter-spacing:-.01em}
+.t-view{overflow:hidden}
+.t-track{display:flex;transition:transform .6s ease}
+.t-slide{flex:0 0 100%;min-width:0;display:grid;grid-template-columns:minmax(0,360px) 1fr;gap:48px;align-items:center}
+.t-slide .ph{aspect-ratio:1/1;width:100%;border-radius:2px}
+.t-role{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+.t-slide h3{font-family:"Playfair Display",Georgia,serif;font-size:clamp(28px,3.4vw,44px);line-height:1.1;margin:0 0 16px;font-weight:600}
+.t-slide p{margin:0;color:var(--muted);max-width:46ch;font-size:16px}
+.t-ctrl{display:flex;align-items:center;gap:20px;margin-top:32px}
+.t-dots{display:flex;gap:8px}
+.t-dots button{width:10px;height:10px;border-radius:50%;border:0;padding:0;background:var(--line)}
+.t-dots button[aria-current="true"]{background:var(--ink);transform:scale(1.25)}
+.t-arrows{display:flex;gap:8px;margin-left:auto}
+.t-arrows button{width:44px;height:44px;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:2px;font-size:18px}
+.t-arrows button:hover{background:var(--surface)}
+.where{padding-bottom:96px}
+.w-sec{margin-top:48px}
+.w-g{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.w-c{background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:24px}
+.w-c h3{margin:0 0 6px;font-size:18px}
+.w-c p{margin:0;color:var(--muted);font-size:14px}
+.w-c .w-t{display:inline-block;margin-top:14px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;border-bottom:1.5px solid var(--accent);padding-bottom:2px}
+.w-store{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.w-map{aspect-ratio:4/3;border-radius:2px;background:linear-gradient(135deg,var(--ph1),var(--ph2));display:grid;place-items:center;color:var(--muted);font-size:13px;text-align:center;padding:16px}
+.w-info{background:var(--surface);border:1px solid var(--line);border-radius:2px;padding:28px}
+.w-info h3{margin:0 0 4px;font-size:20px}
+.w-info p{margin:0 0 14px;color:var(--muted);font-size:14px}
+.w-info dl{margin:0 0 20px}
+.w-info dl div{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px}
+.w-info dt{color:var(--muted)}
+.w-info dd{margin:0;font-weight:500;text-align:right}
+.w-note{font-size:12px;color:var(--muted);margin-top:28px}
+@media (max-width:820px){.w-g,.w-store{grid-template-columns:1fr}.t-slide{grid-template-columns:1fr;gap:24px}.t-slide .ph{max-width:300px}.team{padding-bottom:64px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <span></span>
+    <a class="logo" href="#/">Loop</a>
+    <div class="tools">
+      <div class="cur lang"><button class="cur-btn" id="langBtn" aria-haspopup="listbox" aria-expanded="false"><span id="langLabel">EN</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 3.5L5 7l3.5-3.5"/></svg></button><ul class="cur-menu" id="langMenu" role="listbox" hidden><li><button role="option" data-l="en" aria-selected="true"><span>EN</span><span>English</span></button></li><li><button role="option" data-l="es" aria-selected="false"><span>ES</span><span>Español</span></button></li></ul></div>
+      <div class="cur"><button class="cur-btn" id="curBtn" aria-haspopup="listbox" aria-expanded="false"><span id="curLabel">USD</span><svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 3.5L5 7l3.5-3.5"/></svg></button><ul class="cur-menu" id="curMenu" role="listbox" hidden><li><button role="option" data-c="USD" aria-selected="true"><span>USD</span><span>US Dollar</span></button></li><li><button role="option" data-c="MXN" aria-selected="false"><span>MXN</span><span>Mexican Peso</span></button></li></ul></div>
+      <button class="icon" id="acctBtn" aria-label="Account"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></button>
+      <button class="icon" id="searchBtn" aria-label="Search"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg></button>
+      <button class="icon" id="cartBtn" aria-label="Cart"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1 13H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg><b id="cartCount">0</b></button>
+    </div>
+  </div>
+  <nav id="nav" aria-label="Main"></nav>
+  <div class="search" id="search" hidden>
+    <div class="s-top"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.5-4.5"/></svg><input id="sq" placeholder="Search for your favorite Loop" autocomplete="off" aria-label="Search products"><button class="icon" id="sx" aria-label="Close search"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div>
+    <div id="sres"></div>
+  </div>
+</header>
+
+<main id="app"></main>
+
+<footer id="footer"></footer>
+<div class="drawer-bg" id="drawer" hidden><aside class="drawer" role="dialog" aria-label="Cart"><div class="d-head"><h2>Cart</h2><button class="icon" id="dx" aria-label="Close cart"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg></button></div><div class="d-body" id="dbody"></div><div class="d-foot" id="dfoot"></div></aside></div>
+<div class="modal" id="modal" hidden><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ===== EDIT HERE: replace names, prices, descriptions and image URLs ===== */
+/* =========================================================================
+   EDIT HERE. Replace the text and images below. Nothing else needs to change.
+   IMAGES: put a file name next to this file (for example "hero.jpg") or a full
+   web address. Leave "" to show the grey placeholder box (it shows the size).
+   ========================================================================= */
+const BRAND = "Loop";
+
+/* LANGUAGES. The site has an English / Español switch (top right).
+   Write every text you want in both languages like this:  B("English text", "Texto en español")
+   A plain "text" is shown as is in both languages.  Images and links are never translated. */
+const B=(en,es)=>({en,es});
+
+const SITE = {
+  email: "hello@loop.example",
+  freeShippingFrom: 50, shippingFee: 5,   // US dollars: free shipping above this, otherwise this fee
+  shipping: B("Free standard shipping on orders over $50. Returns accepted within 30 days of delivery.","Envío estándar gratis en pedidos mayores a $50. Devoluciones dentro de los 30 días posteriores a la entrega."),
+  marquee: B("Made to last Est. 2019","Hecho para durar Desde 2019"),
+  newsletter: {title: B("Join the Loop community","Únete a la comunidad Loop"), text: B("Be the first to discover our latest collections and enjoy special offers.","Sé el primero en conocer nuestras nuevas colecciones y disfruta ofertas especiales.")},
+  social: {instagram: "", pinterest: "", tiktok: ""},   // paste your profile links
+
+  hero: {   // image: 16:9, 1920x1080
+    title: B("We make things<br>that stay.","Hacemos cosas<br>que perduran."),
+    text: B("Loop is a design studio for everyday objects, built to last longer than a season.","Loop es un estudio de diseño de objetos cotidianos, hechos para durar más que una temporada."),
+    button: B("View products","Ver productos"), image: ""},
+  about: {label: B("About us","Sobre nosotros"),
+    text: B("Founded in 2019, we started with one question: why do good everyday things get thrown away so fast? Replace this paragraph with your company's real story, mission and what makes you different.","Fundada en 2019, empezamos con una pregunta: ¿por qué los buenos objetos cotidianos se tiran tan rápido? Reemplaza este párrafo con la historia real de tu empresa, tu misión y lo que te hace diferente.")},
+  values: [   // three short points
+    {t: B("Simple by design","Simple por diseño"), d: B("Fewer parts, cleaner lines, nothing you don't need.","Menos piezas, líneas más limpias, nada que no necesites.")},
+    {t: B("Made to last","Hecho para durar"), d: B("Durable materials and repairable construction.","Materiales duraderos y construcción reparable.")},
+    {t: B("Made responsibly","Hecho con responsabilidad"), d: B("Recycled materials and transparent partner factories.","Materiales reciclados y fábricas aliadas transparentes.")}],
+  season: {   // image: 4:5, 1200x1500
+    title: B("Autumn Winter 2026","Otoño Invierno 2026"),
+    p1: B("This season we look at the beauty of ordinary things, turning daily moments into simple, playful shapes. Clean, useful and made to be kept. Replace this with your current collection story.","Esta temporada miramos la belleza de las cosas comunes, convirtiendo los momentos diarios en formas simples y divertidas. Limpias, útiles y hechas para conservarse. Reemplaza esto con la historia de tu colección actual."),
+    p2: B("Simple, useful, and unmistakably Loop.","Simple, útil e inconfundiblemente Loop."), image: ""},
+  band: {text: B("Quality in every detail","Calidad en cada detalle"), image: ""},   // image: 21:9, 2400x1000
+  stories: [   // images: 4:3, 1200x900
+    {t: B("Behind the design","Detrás del diseño"), d: B("How a first sketch becomes an object you will use every day.","Cómo un primer boceto se convierte en un objeto que usarás todos los días."), image: ""},
+    {t: B("Materials we trust","Materiales en los que confiamos"), d: B("Why we choose recycled and long-lasting materials.","Por qué elegimos materiales reciclados y duraderos."), image: ""},
+    {t: B("Made to be repaired","Hecho para repararse"), d: B("Small repairs that keep good things in use for years.","Pequeñas reparaciones que mantienen los buenos objetos en uso por años."), image: ""}],
+  closing: {title: B("See what we make.","Mira lo que hacemos."), button: B("Browse products","Ver productos")},
+
+  /* ---- Fill these in yourself. Leave "" and a grey hint shows in that spot. ---- */
+
+  /* TARGET CUSTOMER: one sentence, shown on the "Why Loop" page.  Example: target: {text: B("...","...")} */
+  target: {text: ""},
+
+  /* WHAT MAKES YOU DIFFERENT vs competitors (use concrete numbers or examples). Shown on the "Why Loop" page. Empty items are hidden.
+     Example item: {t: B("5-year warranty","Garantía de 5 años"), d: B("Most brands offer 1.","La mayoría ofrece 1.")} */
+  diff: {items: [{t: "", d: ""}, {t: "", d: ""}, {t: "", d: ""}]},
+
+  /* TEAM (bottom of Home). "origin" = how the project started, shown on the "Why Loop" page. Slides change automatically. Add or remove members freely. image: 1:1, 800x800 */
+  team: {origin: "",
+    members: [
+      {name: "", role: "", d: "", image: ""},
+      {name: "", role: "", d: "", image: ""},
+      {name: "", role: "", d: "", image: ""},
+      {name: "", role: "", d: "", image: ""},
+      {name: "", role: "", d: "", image: ""}]},
+
+  /* WHERE TO BUY page */
+  where: {
+    intro: "",
+    channels: [{t: "", d: "", tag: ""}, {t: "", d: "", tag: ""}, {t: "", d: "", tag: ""}],
+    regions: [{t: "", d: "", tag: ""}, {t: "", d: "", tag: ""}, {t: "", d: "", tag: ""}],
+    store: {name: "", note: "",
+      rows: [["Address", ""], ["Hours", ""], ["Pick-up", ""], ["Phone", ""]],
+      mapQuery: ""}}  /* mapQuery: address text used by the "Open in Maps" button (button hidden if empty) */
+};
+
+/* Info pages opened from the footer links */
+const PAGES={
+  contact:{t:B("Contact us","Contáctanos"),b:[B("Questions about an order or a product? We are happy to help.","¿Tienes dudas sobre un pedido o un producto? Con gusto te ayudamos."),B("Email: "+SITE.email,"Correo: "+SITE.email),B("Hours: Monday to Friday, 9:00 to 17:00.","Horario: lunes a viernes, de 9:00 a 17:00.")]},
+  shipping:{t:B("Shipping policy","Política de envíos"),b:[B("We ship worldwide. Orders are packed within 1 to 2 business days.","Enviamos a todo el mundo. Los pedidos se preparan en 1 a 2 días hábiles."),B("Standard delivery takes 3 to 7 business days. Express delivery takes 1 to 3 business days.","La entrega estándar tarda de 3 a 7 días hábiles. La entrega exprés tarda de 1 a 3 días hábiles."),B("Shipping costs are shown at checkout before you pay.","Los costos de envío se muestran al pagar, antes de confirmar.")]},
+  refund:{t:B("Refund policy","Política de reembolsos"),b:[B("You can return unused items within 30 days of delivery.","Puedes devolver artículos sin usar dentro de los 30 días posteriores a la entrega."),B("Refunds go back to your original payment method within 5 to 10 business days after we receive the item.","Los reembolsos se hacen al método de pago original en 5 a 10 días hábiles después de recibir el artículo."),B("Contact us to start a return.","Contáctanos para iniciar una devolución.")]},
+  faq:{t:B("FAQ","Preguntas frecuentes"),faq:[
+    [B("Where do you ship?","¿A dónde envían?"),B("We ship to most countries. Delivery options are shown at checkout.","Enviamos a la mayoría de los países. Las opciones de entrega se muestran al pagar.")],
+    [B("How can I track my order?","¿Cómo puedo rastrear mi pedido?"),B("After your order ships you will receive an email with a tracking link.","Cuando se envíe tu pedido recibirás un correo con un enlace de rastreo.")],
+    [B("Can I change or cancel my order?","¿Puedo cambiar o cancelar mi pedido?"),B("Yes, as long as it has not shipped. Contact us as soon as possible.","Sí, siempre que no se haya enviado. Contáctanos lo antes posible.")],
+    [B("Which payment methods do you accept?","¿Qué métodos de pago aceptan?"),B("Major cards and digital wallets.","Tarjetas principales y billeteras digitales.")],
+    [B("How do I return an item?","¿Cómo devuelvo un artículo?"),B("See our refund policy, then contact us with your order number.","Consulta nuestra política de reembolsos y contáctanos con tu número de pedido.")]]},
+  story:{t:B("Our story","Nuestra historia"),b:[B("Loop started in 2019 with a simple idea: everyday things should last.","Loop comenzó en 2019 con una idea simple: los objetos cotidianos deben durar."),B("We design simple objects, choose durable materials and work with partners we know by name.","Diseñamos objetos simples, elegimos materiales duraderos y trabajamos con socios que conocemos por su nombre."),B("Replace this page with your company's real history.","Reemplaza esta página con la historia real de tu empresa.")]},
+  stories:{t:B("Stories","Historias"),b:[B("Behind the design: how a first sketch becomes an object you will use every day.","Detrás del diseño: cómo un primer boceto se convierte en un objeto que usarás todos los días."),B("Materials we trust: why we choose recycled and long-lasting materials.","Materiales en los que confiamos: por qué elegimos materiales reciclados y duraderos."),B("Made to be repaired: small repairs that keep good things in use for years.","Hecho para repararse: pequeñas reparaciones que mantienen los buenos objetos en uso por años.")]},
+  press:{t:B("Press & wholesale","Prensa y mayoreo"),b:[B("For press enquiries and wholesale, write to "+SITE.email+".","Para prensa y ventas al mayoreo, escribe a "+SITE.email+"."),B("Please include your company name, location and what you are looking for.","Incluye el nombre de tu empresa, tu ubicación y lo que buscas.")]},
+  terms:{t:B("Terms of service","Términos del servicio"),b:[B("These terms describe how you may use this website and buy from us.","Estos términos describen cómo puedes usar este sitio web y comprarnos."),B("Replace this text with your real terms of service.","Reemplaza este texto con tus términos de servicio reales.")]},
+  privacy:{t:B("Privacy policy","Política de privacidad"),b:[B("We only collect the information needed to process your order and improve our service.","Solo recopilamos la información necesaria para procesar tu pedido y mejorar nuestro servicio."),B("We never sell your personal data.","Nunca vendemos tus datos personales."),B("Replace this text with your real privacy policy.","Reemplaza este texto con tu aviso de privacidad real.")]}
+};
+
+/* PRODUCTS: images = [main, photo 2, photo 3], all square 1:1, 1200x1200.
+   price = US dollars. Add mxn:1500 to a product to set its own peso price.
+   name, desc and tag can be B("English","Español"). */
+const PRODUCTS = [
+  {id:1,name:B("Everyday Backpack","Mochila Diaria"),cat:"Bags",price:89,tag:B("New","Nuevo"),images:["","",""],desc:B("A clean, structured daily pack with a padded laptop sleeve and weather-resistant fabric.","Una mochila diaria limpia y estructurada, con compartimento acolchado para laptop y tela resistente al clima."),colors:["#1F2937","#9CA3AF","#A7D676"],specs:{Material:"Recycled nylon",Capacity:"20 L",Weight:"720 g"}},
+  {id:2,name:B("Studio Headphones","Audífonos de Estudio"),cat:"Audio",price:149,tag:B("Best seller","Más vendido"),images:["","",""],desc:B("Over-ear wireless headphones with active noise cancelling and 40-hour battery life.","Audífonos inalámbricos over-ear con cancelación activa de ruido y 40 horas de batería."),colors:["#111827","#E5E7EB"],specs:{Battery:"40 h",Connection:"Bluetooth 5.3",Weight:"260 g"}},
+  {id:3,name:B("Arc Desk Lamp","Lámpara de Escritorio Arc"),cat:"Home",price:64,tag:"",images:["","",""],desc:B("A slim adjustable lamp with warm-to-cool dimming and a touch control base.","Una lámpara delgada y ajustable con regulación de luz cálida a fría y base táctil."),colors:["#E5E7EB","#111827"],specs:{Light:"2700–6500 K",Power:"USB-C",Height:"45 cm"}},
+  {id:4,name:B("Steel Bottle 600","Botella de Acero 600"),cat:"Lifestyle",price:28,tag:"",images:["","",""],desc:B("Double-wall insulated bottle that keeps drinks cold for 24 hours or hot for 12.","Botella aislada de doble pared que mantiene las bebidas frías 24 horas o calientes 12."),colors:["#A7D676","#E5E7EB","#111827"],specs:{Volume:"600 ml",Material:"18/8 steel",Weight:"310 g"}},
+];
+const RATE_MXN = 18; // 1 USD = ? MXN. Change to the current rate. To set a peso price for one product, add mxn:1500 to it.
+/* ========================================================================= */
+
+/* ===== LANGUAGE (English / Español) =====
+   DEFAULT_LANG is used the first time someone opens the site; after that the choice is remembered. */
+const DEFAULT_LANG="en";
+let lang=DEFAULT_LANG;
+try{lang=localStorage.getItem("loop_lang")||DEFAULT_LANG;}catch(e){}
+if(lang!=="es")lang="en";
+/* Spanish for the fixed interface texts. Key = the English text used in the code. */
+const ES={
+  "Account":"Cuenta","Search":"Buscar","Cart":"Carrito","Search for your favorite Loop":"Busca tu Loop favorito","Search products":"Buscar productos",
+  "Close search":"Cerrar búsqueda","Close cart":"Cerrar carrito","Close":"Cerrar","Main":"Principal","US Dollar":"Dólar estadounidense","Mexican Peso":"Peso mexicano",
+  "Home":"Inicio","Shop":"Tienda","Where to buy":"Dónde comprar","Why Loop":"Por qué Loop","All":"Todos",
+  "Hero photo<br>16:9 · 1920×1080":"Foto principal<br>16:9 · 1920×1080",
+  "Season photo<br>4:5 · 1200×1500":"Foto de temporada<br>4:5 · 1200×1500",
+  "Wide photo<br>21:9 · 2400×1000":"Foto panorámica<br>21:9 · 2400×1000",
+  "Story photo<br>4:3 · 1200×900":"Foto de historia<br>4:3 · 1200×900",
+  "Team photo<br>1:1 · 800×800":"Foto del equipo<br>1:1 · 800×800",
+  "Product photo<br>1:1 · 1200×1200":"Foto del producto<br>1:1 · 1200×1200",
+  "Main photo<br>1:1 · 1200×1200":"Foto principal<br>1:1 · 1200×1200",
+  "Photo 2<br>1:1 · 1200×1200":"Foto 2<br>1:1 · 1200×1200",
+  "Photo 3<br>1:1 · 1200×1200":"Foto 3<br>1:1 · 1200×1200",
+  "Map photo or embed<br>4:3":"Foto o mapa<br>4:3",
+  "Stories":"Historias","Read story":"Leer historia","Our team":"Nuestro equipo","Role":"Cargo","Team member name":"Nombre del integrante","Short bio":"Biografía breve",
+  "Show member":"Mostrar integrante","Previous":"Anterior","Next":"Siguiente",
+  "Who is Loop for?":"¿Para quién es Loop?",
+  "Why buy from us and not the competition?":"¿Por qué comprarnos a nosotros y no a la competencia?",
+  "How did the project start?":"¿Cómo empezó el proyecto?",
+  "Who is your product for? Example: young professionals aged 20 to 35 who ...":"¿Para quién es tu producto? Ejemplo: jóvenes profesionales de 20 a 35 años que ...",
+  "What makes you different? Add short points here.":"¿Qué te hace diferente? Agrega puntos breves aquí.",
+  "Write how the project started here.":"Escribe aquí cómo empezó el proyecto.",
+  "Sales channels":"Canales de venta","Shipping regions":"Zonas de envío","Our store":"Nuestra tienda","Open in Maps":"Abrir en Mapas",
+  "Description":"Descripción","Channel":"Canal","Region":"Región","Short intro":"Introducción breve","Store name":"Nombre de la tienda","Short note":"Nota breve",
+  "Address":"Dirección","Hours":"Horario","Pick-up":"Recoger en tienda","Phone":"Teléfono",
+  "Contact us":"Contáctanos","Our story":"Nuestra historia","Shipping policy":"Política de envíos","Refund policy":"Política de reembolsos","FAQ":"Preguntas frecuentes",
+  "Press & wholesale":"Prensa y mayoreo","Terms of service":"Términos del servicio","Privacy policy":"Política de privacidad",
+  "Subscribe":"Suscribirme","E-mail":"Correo electrónico","Thanks for subscribing (demo)":"¡Gracias por suscribirte! (demo)",
+  "Add your {n} link in SITE.social":"Agrega tu enlace de {n} en SITE.social",
+  "Page not found":"Página no encontrada","The page you are looking for does not exist or has moved.":"La página que buscas no existe o fue movida.","Back to home":"Volver al inicio",
+  "Order summary":"Resumen del pedido","Qty":"Cant.","Subtotal":"Subtotal","Shipping":"Envío","Free":"Gratis","Total":"Total",
+  "Your cart is empty":"Tu carrito está vacío","Your cart is empty.":"Tu carrito está vacío.","Add something to your cart before checking out.":"Agrega algo a tu carrito antes de pagar.","Go to shop":"Ir a la tienda",
+  "Checkout":"Finalizar compra","Contact":"Contacto","Email":"Correo","Shipping address":"Dirección de envío","Full name":"Nombre completo","City":"Ciudad","Postal code":"Código postal",
+  "Country":"País","Mexico":"México","United States":"Estados Unidos","Other":"Otro","Payment":"Pago","Card":"Tarjeta",
+  "Demo checkout: no real payment is taken. Do not enter real card details.":"Pago de demostración: no se cobra nada real. No ingreses datos reales de tarjeta.",
+  "Place order":"Realizar pedido","Thank you,":"Gracias,",
+  "Your order {id} is confirmed. A confirmation email will be sent to {email}.":"Tu pedido {id} está confirmado. Se enviará un correo de confirmación a {email}.",
+  "Demo order: no payment was taken and no email is sent.":"Pedido de demostración: no se cobró nada ni se envió ningún correo.","Continue shopping":"Seguir comprando",
+  "Everything we make, in one place.":"Todo lo que hacemos, en un solo lugar.",
+  "Back to Shop":"Volver a la tienda","Color":"Color","Quantity":"Cantidad","Decrease":"Disminuir","Increase":"Aumentar","Add to Cart":"Agregar al carrito","Buy Now":"Comprar ahora",
+  "Details":"Detalles","Shipping & returns":"Envíos y devoluciones","Care":"Cuidado",
+  "Wipe clean with a damp cloth. Replace with your own care instructions.":"Limpia con un paño húmedo. Reemplaza con tus propias instrucciones de cuidado.",
+  "You may also like":"También te puede gustar","Added {n} × {p} to your cart":"Agregaste {n} × {p} al carrito",
+  "Material":"Material","Capacity":"Capacidad","Weight":"Peso","Battery":"Batería","Connection":"Conexión","Light":"Luz","Power":"Alimentación","Height":"Altura","Volume":"Volumen",
+  "Recycled nylon":"Nylon reciclado","18/8 steel":"Acero 18/8",
+  "Name":"Nombre","Message":"Mensaje","Send message":"Enviar mensaje","Sample text. Replace with your own.":"Texto de ejemplo. Reemplázalo con el tuyo.","Message sent (demo)":"Mensaje enviado (demo)",
+  "Remove":"Quitar",
+  "Log in":"Iniciar sesión","Sign up":"Registrarse","Create your account":"Crea tu cuenta","Welcome back":"Bienvenido de nuevo",
+  "Join {b} to save your orders and favorites.":"Únete a {b} para guardar tus pedidos y favoritos.","Log in to continue.":"Inicia sesión para continuar.",
+  "Continue with Google":"Continuar con Google","or use email":"o usa tu correo","Password":"Contraseña","Create account":"Crear cuenta","Log out":"Cerrar sesión",
+  "Hi,":"Hola,","Logged out":"Sesión cerrada","Demo: Google sign-in is simulated":"Demo: el inicio de sesión con Google es simulado","Welcome,":"Bienvenido,",
+  "No results.":"Sin resultados."
+};
+/* T(x): returns x in the current language. x can be B("en","es"), or plain text (looked up in ES). */
+const T=v=>v==null?"":(typeof v==="object"?(v[lang]??v.en??""):((lang==="es"&&ES[v])||v));
+const TF=(k,o)=>{let r=T(k);for(const x in o)r=r.split("{"+x+"}").join(o[x]);return r;};
+
+const $ = s => document.querySelector(s);
+const app = $("#app");
+let cart = 0, filter = "All", qty = 1, color = 0, toastT, curr = "USD";
+const money = p => curr==="USD" ? "$"+p.price.toFixed(2) : "MX$"+(p.mxn ?? Math.round(p.price*RATE_MXN)).toLocaleString("en-US");
+
+function slot(src,label,alt){return src?`<img src="${src}" alt="${T(alt)||""}">`:`<span>${T(label)}</span>`;}
+const img=(p,i)=>(p.images||[])[i];
+function ph(p,label){return slot(img(p,0),label||"Product photo<br>1:1 \u00b7 1200\u00d71200",p.name);}
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),2200);
+}
+function setCart(n){ cart=n; $("#cartCount").textContent=n; }
+
+function renderHome(){
+  const S=SITE, H=S.hero;
+  app.innerHTML=`
+  <section class="h-hero${H.image?" has-img":""}">
+    <div class="h-bg"${H.image?` style="background:url('${H.image}') center/cover"`:""}>${H.image?"":`<span class="slot-l">${T("Hero photo<br>16:9 \u00b7 1920\u00d71080")}</span>`}</div>
+    <div class="wrap h-inner">
+      <h1>${T(H.title)}</h1>
+      <p>${T(H.text)}</p>
+      <a class="btn primary h-cta" href="#/products">${T(H.button)}</a>
+    </div>
+  </section>
+  <section class="wrap story"><h2>${T(S.about.label)}</h2><p class="lead">${T(S.about.text)}</p></section>
+  <section class="wrap values">${S.values.map(v=>`<div><h3>${T(v.t)}</h3><p>${T(v.d)}</p></div>`).join("")}</section>
+  <section class="season">
+    <div class="season-t"><div><h2>${T(S.season.title)}</h2><p>${T(S.season.p1)}</p><p>${T(S.season.p2)}</p></div></div>
+    <div class="ph">${slot(S.season.image,"Season photo<br>4:5 \u00b7 1200\u00d71500","")}</div>
+  </section>
+  <section class="qband${S.band.image?" has-img":""}"><div class="ph">${slot(S.band.image,"Wide photo<br>21:9 \u00b7 2400\u00d71000","")}</div><h2>${T(S.band.text)}</h2></section>
+  <section class="wrap stories"><h2 class="sec-t">${T("Stories")}</h2><div class="s-grid">${S.stories.map(x=>`<article><div class="ph">${slot(x.image,"Story photo<br>4:3 \u00b7 1200\u00d7900","")}</div><h3>${T(x.t)}</h3><p>${T(x.d)}</p><a class="more" href="#/page/stories">${T("Read story")}</a></article>`).join("")}</div></section>
+  <section class="wrap team" aria-roledescription="carousel" aria-label="${T("Our team")}"><h2 class="sec-t">${T("Our team")}</h2>
+    <div class="t-view"><div class="t-track" id="tTrack">${S.team.members.map((m,i)=>`<article class="t-slide" aria-hidden="${i!==0}"><div class="ph">${slot(m.image,"Team photo<br>1:1 \u00b7 800\u00d7800",m.name)}</div><div><p class="t-role">${hint(m.role,"Role")}</p><h3>${hint(m.name,"Team member name")}</h3><p>${hint(m.d,"Short bio")}</p></div></article>`).join("")}</div></div>
+    <div class="t-ctrl"><div class="t-dots" id="tDots">${S.team.members.map((m,i)=>`<button aria-label="${T("Show member")} ${i+1}" aria-current="${i===0}" data-i="${i}"></button>`).join("")}</div><div class="t-arrows"><button id="tPrev" aria-label="${T("Previous")}">\u2190</button><button id="tNext" aria-label="${T("Next")}">\u2192</button></div></div>
+  </section>
+  <section class="closing"><h2>${T(S.closing.title)}</h2><a class="btn primary h-cta" href="#/products">${T(S.closing.button)}</a></section>`;
+  initTeam();
+}
+
+const hint=(v,h)=>v?T(v):`<span class="hint">${T(h)}</span>`;
+function diffList(){
+  const it=(SITE.diff.items||[]).filter(x=>x.t||x.d);
+  if(!it.length)return `<ul class="diff-l"><li>${hint("","What makes you different? Add short points here.")}</li></ul>`;
+  return `<ul class="diff-l">${it.map(x=>`<li><b>${T(x.t)}</b><span>${T(x.d)}</span></li>`).join("")}</ul>`;
+}
+let teamT=null;
+function initTeam(){
+  clearInterval(teamT);
+  const track=$("#tTrack"); if(!track)return;
+  const n=SITE.team.members.length, dots=[...document.querySelectorAll("#tDots button")];
+  /* a copy of the first slide sits after the last one, so the last slide glides on to the first */
+  if(n>1){const c=track.children[0].cloneNode(true);c.setAttribute("aria-hidden","true");track.appendChild(c);}
+  const slides=[...track.children].slice(0,n);
+  let i=0,pos=0;
+  const setX=(k,anim)=>{track.style.transition=anim?"transform .7s ease":"none";track.style.transform=`translateX(-${k*100}%)`;pos=k;};
+  const mark=()=>{dots.forEach((d,j)=>d.setAttribute("aria-current",j===i));slides.forEach((s,j)=>s.setAttribute("aria-hidden",j!==i));};
+  const snap=()=>{if(pos===n){setX(0,false);void track.offsetWidth;}};   /* unseen jump from the copy back to the real first slide */
+  const go=k=>{
+    snap();
+    if(k>=n){setX(n,true);i=0;}
+    else if(k<0){setX(n,false);void track.offsetWidth;setX(n-1,true);i=n-1;}
+    else{setX(k,true);i=k;}
+    mark();
+  };
+  track.addEventListener("transitionend",e=>{if(e.target===track)snap();});
+  const start=()=>{clearInterval(teamT); if(!matchMedia("(prefers-reduced-motion:reduce)").matches&&n>1)teamT=setInterval(()=>go(i+1),5000);};
+  dots.forEach(d=>d.onclick=()=>{go(+d.dataset.i);start();});
+  $("#tPrev").onclick=()=>{go(i-1);start();};
+  $("#tNext").onclick=()=>{go(i+1);start();};
+  const box=track.closest(".team");
+  box.onmouseenter=()=>clearInterval(teamT);
+  box.onmouseleave=start;
+  start();
+}
+function renderWhere(){
+  const W=SITE.where;
+  const cards=(a,h)=>`<div class="w-g">${a.map(x=>`<div class="w-c"><h3>${hint(x.t,h)}</h3><p>${hint(x.d,"Description")}</p>${x.tag?`<span class="w-t">${T(x.tag)}</span>`:""}</div>`).join("")}</div>`;
+  const q=encodeURIComponent(W.store.mapQuery||"");
+  app.innerHTML=`<section class="wrap page-head"><h1>${T("Where to buy")}</h1><p>${hint(W.intro,"Short intro")}</p></section>
+  <section class="wrap where">
+    <div class="w-sec"><h2 class="sec-t">${T("Sales channels")}</h2>${cards(W.channels,"Channel")}</div>
+    <div class="w-sec"><h2 class="sec-t">${T("Shipping regions")}</h2>${cards(W.regions,"Region")}</div>
+    <div class="w-sec"><h2 class="sec-t">${T("Our store")}</h2>
+      <div class="w-store">
+        <div class="w-map">${T("Map photo or embed<br>4:3")}</div>
+        <div class="w-info"><h3>${hint(W.store.name,"Store name")}</h3><p>${hint(W.store.note,"Short note")}</p><dl>${W.store.rows.map(r=>`<div><dt>${T(r[0])}</dt><dd>${hint(r[1],"—")}</dd></div>`).join("")}</dl>${W.store.mapQuery?`<a class="btn primary h-cta" style="height:48px;display:inline-flex;align-items:center" href="https://www.google.com/maps/search/?api=1&query=${q}" target="_blank" rel="noopener">${T("Open in Maps")}</a>`:""}</div>
+      </div>
+    </div>
+  </section>`;
+}
+function renderWhy(){
+  const S=SITE;
+  const q=(title,body,open)=>`<details${open?" open":""}><summary>${T(title)}</summary>${body}</details>`;
+  app.innerHTML=`<div class="wrap page"><div class="crumb"><a class="back" href="#/">${ARROW}${T("Home")}</a></div><h1>${T("Why Loop")}</h1>
+  ${q("Who is Loop for?",`<p>${hint(S.target.text,"Who is your product for? Example: young professionals aged 20 to 35 who ...")}</p>`,true)}
+  ${q("Why buy from us and not the competition?",diffList())}
+  ${q("How did the project start?",`<p>${hint(S.team.origin,"Write how the project started here.")}</p>`)}
+  </div>`;
+}
+function renderFooter(){
+  const S=SITE;
+  document.title=BRAND+" \u2014 "+T("Shop");
+  $(".logo").textContent=BRAND;
+  $("#footer").innerHTML=`
+  <section class="news">
+    <h2>${T(S.newsletter.title)}</h2>
+    <p>${T(S.newsletter.text)}</p>
+    <form id="nf"><input type="email" required placeholder="${T("E-mail")}" aria-label="${T("E-mail")}"><button type="submit">${T("Subscribe")}</button></form>
+  </section>
+  <div class="marquee" aria-hidden="true"><div class="m-track">${Array(6).fill("<span>"+T(S.marquee)+"</span>").join("")}</div></div>
+  <div class="f-links">
+    <div><a href="#/where">${T("Where to buy")}</a><a href="#/why">${T("Why Loop")}</a><a href="#/page/contact">${T("Contact us")}</a><a href="#/page/story">${T("Our story")}</a><a href="#/page/stories">${T("Stories")}</a><a href="#/page/shipping">${T("Shipping policy")}</a><a href="#/page/refund">${T("Refund policy")}</a></div>
+    <div><a href="#/page/faq">${T("FAQ")}</a><a href="#/page/press">${T("Press & wholesale")}</a><a href="#/page/terms">${T("Terms of service")}</a><a href="#/page/privacy">${T("Privacy policy")}</a></div>
+  </div>
+  <div class="f-bottom">
+    <div><div class="f-social"><button aria-label="Instagram" data-s="instagram"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></button><button aria-label="Pinterest" data-s="pinterest"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M11 9.5c1.8-.8 3.5.2 3.2 2-.3 2-1.8 3-2.8 2.4M10.5 8.5L9 16"/></svg></button><button aria-label="TikTok" data-s="tiktok"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4v10a3.5 3.5 0 1 1-3.5-3.5M14 4c.4 2.4 2 3.8 4.5 4"/></svg></button></div><div class="copy">\u00a9 ${new Date().getFullYear()} ${BRAND}</div></div>
+    <div class="pay"><span>VISA</span><span>Mastercard</span><span>AMEX</span><span>Apple Pay</span><span>Google Pay</span></div>
+  </div>`;
+  $("#nf").onsubmit=e=>{e.preventDefault();e.target.reset();toast(T("Thanks for subscribing (demo)"));};
+  document.querySelectorAll(".f-social button").forEach(b=>b.onclick=()=>{
+    const u=S.social[b.dataset.s];
+    if(u)window.open(u,"_blank","noopener");else toast(TF("Add your {n} link in SITE.social",{n:b.getAttribute("aria-label")}));
+  });
+}
+
+const ARROW='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>';
+const fmtC=(n,c)=>c==="USD"?"$"+n.toFixed(2):"MX$"+Math.round(n).toLocaleString("en-US");
+let lastOrder=null;
+function shipCost(){
+  const usd=cartItems.reduce((a,c)=>a+PRODUCTS.find(x=>x.id===c.id).price*c.qty,0);
+  return usd>=SITE.freeShippingFrom?0:(curr==="USD"?SITE.shippingFee:SITE.shippingFee*RATE_MXN);
+}
+function renderNotFound(){
+  app.innerHTML=`<div class="wrap nf"><p class="eyebrow">404</p><h1>${T("Page not found")}</h1><p>${T("The page you are looking for does not exist or has moved.")}</p><a class="btn primary h-cta" href="#/">${T("Back to home")}</a></div>`;
+}
+function coSumHTML(){
+  let sub=0;
+  const rows=cartItems.map(c=>{
+    const p=PRODUCTS.find(x=>x.id===c.id), t=unit(p)*c.qty; sub+=t;
+    return `<div class="co-row"><div class="ph">${ph(p," ")}</div><div><div class="nm">${T(p.name)}</div><div class="sub">${T("Qty")} ${c.qty}</div></div><div>${fmtC(t,curr)}</div></div>`;
+  }).join("");
+  const ship=shipCost();
+  return `<h2>${T("Order summary")}</h2>${rows}<div class="co-line"><span>${T("Subtotal")}</span><span>${fmtC(sub,curr)}</span></div><div class="co-line"><span>${T("Shipping")}</span><span>${ship?fmtC(ship,curr):T("Free")}</span></div><div class="co-line t"><span>${T("Total")}</span><span>${fmtC(sub+ship,curr)}</span></div>`;
+}
+function renderCheckout(){
+  if(!cartItems.length){
+    app.innerHTML=`<div class="wrap nf"><h1>${T("Your cart is empty")}</h1><p>${T("Add something to your cart before checking out.")}</p><a class="btn primary h-cta" href="#/products">${T("Go to shop")}</a></div>`;
+    return;
+  }
+  app.innerHTML=`<div class="wrap checkout">
+    <div class="crumb"><a class="back" href="#/products">${ARROW}${T("Shop")}</a></div>
+    <h1>${T("Checkout")}</h1>
+    <div class="co-grid">
+      <form id="cof">
+        <h2>${T("Contact")}</h2>
+        <label class="field"><span>${T("Email")}</span><input name="email" type="email" required autocomplete="email"></label>
+        <h2>${T("Shipping address")}</h2>
+        <label class="field"><span>${T("Full name")}</span><input name="name" required autocomplete="name"></label>
+        <label class="field"><span>${T("Address")}</span><input name="address" required autocomplete="street-address"></label>
+        <div class="row2"><label class="field"><span>${T("City")}</span><input name="city" required></label><label class="field"><span>${T("Postal code")}</span><input name="zip" required></label></div>
+        <label class="field"><span>${T("Country")}</span><select name="country"><option>${T("Mexico")}</option><option>${T("United States")}</option><option>${T("Other")}</option></select></label>
+        <h2>${T("Payment")}</h2>
+        <label class="pay-opt"><input type="radio" name="pay" value="Card" checked> ${T("Card")}</label>
+        <label class="pay-opt"><input type="radio" name="pay" value="Apple Pay"> Apple Pay</label>
+        <label class="pay-opt"><input type="radio" name="pay" value="Google Pay"> Google Pay</label>
+        <p class="demo-note">${T("Demo checkout: no real payment is taken. Do not enter real card details.")}</p>
+        <button class="btn primary" type="submit">${T("Place order")}</button>
+      </form>
+      <aside class="co-sum" id="cosum">${coSumHTML()}</aside>
+    </div></div>`;
+  $("#cof").onsubmit=e=>{
+    e.preventDefault();
+    const f=new FormData(e.target);
+    let sub=0;
+    const lines=cartItems.map(c=>{const p=PRODUCTS.find(x=>x.id===c.id),t=unit(p)*c.qty;sub+=t;return{pid:p.id,name:p.name,qty:c.qty,total:t};});
+    const ship=shipCost();
+    const order={id:"LP-"+Math.floor(100000+Math.random()*900000),curr,name:f.get("name"),email:f.get("email"),pay:f.get("pay"),lines,sub,ship,total:sub+ship};
+    lastOrder=order;
+    try{localStorage.setItem("loop_order",JSON.stringify(order));}catch(err){}
+    cartItems=[];updateBadge();
+    location.hash="#/order";
+  };
+}
+function renderOrder(){
+  let o=lastOrder;
+  if(!o){try{o=JSON.parse(localStorage.getItem("loop_order")||"null");}catch(e){}}
+  if(!o){renderNotFound();return;}
+  const rows=o.lines.map(l=>{
+    const p=PRODUCTS.find(x=>x.id===l.pid);
+    return `<div class="co-row"><div class="ph">${p?ph(p," "):""}</div><div><div class="nm">${T(l.name)}</div><div class="sub">${T("Qty")} ${l.qty}</div></div><div>${fmtC(l.total,o.curr)}</div></div>`;
+  }).join("");
+  app.innerHTML=`<div class="wrap order"><div class="check">✓</div><h1>${T("Thank you,")} <span id="on"></span></h1><p>${TF("Your order {id} is confirmed. A confirmation email will be sent to {email}.",{id:'<b id="oid"></b>',email:'<span id="oe"></span>'})}</p><div class="co-sum"><h2>${T("Order summary")}</h2>${rows}<div class="co-line"><span>${T("Subtotal")}</span><span>${fmtC(o.sub,o.curr)}</span></div><div class="co-line"><span>${T("Shipping")}</span><span>${o.ship?fmtC(o.ship,o.curr):T("Free")}</span></div><div class="co-line t"><span>${T("Total")}</span><span>${fmtC(o.total,o.curr)}</span></div></div><p class="demo-note">${T("Demo order: no payment was taken and no email is sent.")}</p><a class="btn primary h-cta" href="#/products">${T("Continue shopping")}</a></div>`;
+  $("#on").textContent=(o.name||"").split(" ")[0]; $("#oid").textContent=o.id; $("#oe").textContent=o.email;
+}
+function reveal(){
+  if(!("IntersectionObserver" in window))return;
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target);}}),{threshold:.08});
+  app.querySelectorAll(".target,.story,.values,.diff,.team,.where,.season,.qband,.stories,.closing,.card,.gallery,.more-s").forEach(el=>{el.classList.add("rv");io.observe(el);});
+}
+
+function card(p){
+  return `<a class="card" href="#/product/${p.id}"><div class="ph">${ph(p)}${p.tag?`<span class="tag">${T(p.tag)}</span>`:""}</div><div class="meta"><div class="name">${T(p.name)}</div><div>${money(p)}</div></div><div class="dots">${p.colors.map(c=>`<i style="background:${c}"></i>`).join("")}</div></a>`;
+}
+
+function renderList(){
+  const cats=["All"];
+  const items=PRODUCTS.filter(p=>filter==="All"||p.cat===filter);
+  app.innerHTML=`
+  <section class="wrap page-head">
+    <h1>${T("Shop")}</h1>
+    <p>${T("Everything we make, in one place.")}</p>
+  </section>
+  <section class="wrap">
+    <div class="filters">${cats.map(c=>`<button class="chip" aria-pressed="${c===filter}" data-cat="${c}">${T(c)}</button>`).join("")}</div>
+    <div class="grid">${items.map(card).join("")}</div>
+  </section>`;
+  app.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{location.hash=b.dataset.cat==="All"?"#/products":"#/products/"+encodeURIComponent(b.dataset.cat);});
+}
+
+function renderDetail(id){
+  const p=PRODUCTS.find(x=>x.id===id);
+  if(!p){renderNotFound();return;}
+  qty=1; color=0;
+  app.innerHTML=`
+  <div class="wrap">
+    <div class="crumb"><a class="back" href="#/products" aria-label="${T("Back to Shop")}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>${T("Shop")}</a></div>
+    <div class="detail">
+      <div class="gallery">
+        <div class="ph">${slot(img(p,0),"Main photo<br>1:1 \u00b7 1200\u00d71200",p.name)}</div>
+        <div class="ph">${slot(img(p,1),"Photo 2<br>1:1 \u00b7 1200\u00d71200",p.name)}</div>
+        <div class="ph">${slot(img(p,2),"Photo 3<br>1:1 \u00b7 1200\u00d71200",p.name)}</div>
+      </div>
+      <div class="info">
+        <h1>${T(p.name)}</h1>
+        <p class="price">${money(p)}</p>
+        <p class="desc">${T(p.desc)}</p>
+        <span class="label">${T("Color")}</span>
+        <div class="swatches" id="sw">${p.colors.map((c,i)=>`<button class="sw" style="background:${c}" aria-label="${T("Color")} ${i+1}" aria-pressed="${i===0}" data-i="${i}"></button>`).join("")}</div>
+        <span class="label">${T("Quantity")}</span>
+        <div class="qty"><button id="minus" aria-label="${T("Decrease")}">−</button><span id="q">1</span><button id="plus" aria-label="${T("Increase")}">+</button></div>
+        <div class="actions">
+          <button class="btn primary" id="add">${T("Add to Cart")}</button>
+          <button class="btn ghost" id="buy">${T("Buy Now")}</button>
+        </div>
+        <div class="acc">
+          <details open><summary>${T("Details")}</summary><dl class="specs">${Object.entries(p.specs).map(([k,v])=>`<div><dt>${T(k)}</dt><dd>${T(v)}</dd></div>`).join("")}</dl></details>
+          <details><summary>${T("Shipping & returns")}</summary><p>${T(SITE.shipping)}</p></details>
+          <details><summary>${T("Care")}</summary><p>${T("Wipe clean with a damp cloth. Replace with your own care instructions.")}</p></details>
+        </div>
+      </div>
+    </div>
+    <section class="more-s"><h2 class="sec-t">${T("You may also like")}</h2><div class="grid">${PRODUCTS.filter(x=>x.id!==p.id).slice(0,3).map(card).join("")}</div></section>
+  </div>`;
+  $("#sw").querySelectorAll(".sw").forEach(b=>b.onclick=()=>{
+    color=+b.dataset.i; $("#sw").querySelectorAll(".sw").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  });
+  $("#minus").onclick=()=>{qty=Math.max(1,qty-1);$("#q").textContent=qty;};
+  $("#plus").onclick=()=>{qty=Math.min(99,qty+1);$("#q").textContent=qty;};
+  $("#add").onclick=()=>{addToCart(p.id,color,qty);toast(TF("Added {n} \u00d7 {p} to your cart",{n:qty,p:T(p.name)}));};
+  $("#buy").onclick=()=>{addToCart(p.id,color,qty);if(location.hash==="#/checkout")route();else location.hash="#/checkout";};
+}
+
+function renderPage(k){
+  const d=PAGES[k];
+  if(!d){renderNotFound();return;}
+  const body=d.faq?d.faq.map(([q,a])=>`<details><summary>${T(q)}</summary><p>${T(a)}</p></details>`).join(""):d.b.map(x=>`<p>${T(x)}</p>`).join("");
+  const form=k==="contact"?`<form class="cform" id="cf"><label class="field"><span>${T("Name")}</span><input required></label><label class="field"><span>${T("Email")}</span><input type="email" required></label><label class="field"><span>${T("Message")}</span><textarea rows="5" required></textarea></label><button class="btn primary" type="submit">${T("Send message")}</button></form>`:"";
+  app.innerHTML=`<div class="wrap page"><div class="crumb"><a class="back" href="#/"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>${T("Home")}</a></div><h1>${T(d.t)}</h1>${body}${form}<p class="note">${T("Sample text. Replace with your own.")}</p></div>`;
+  if(form)$("#cf").onsubmit=e=>{e.preventDefault();e.target.reset();toast(T("Message sent (demo)"));};
+}
+
+function buildNav(page){
+  const items=[["Home","#/","home"],["Shop","#/products","all"],["Where to buy","#/where","where"],["Why Loop","#/why","why"]];
+  const cur=page==="home"?"home":page==="where"?"where":page==="why"?"why":page==="other"?"":(filter==="All"?"all":filter);
+  $("#nav").innerHTML=items.map(([lbl,h,k])=>`<a href="${h}"${k===cur?' aria-current="page"':''}>${T(lbl)}</a>`).join("");
+}
+
+function route(){
+  const h=decodeURIComponent(location.hash);
+  const m=h.match(/^#\/product\/(\d+)$/);
+  const cm=h.match(/^#\/products\/(.+)$/);
+  const pm=h.match(/^#\/page\/([\w-]+)$/);
+  filter=cm?cm[1]:"All";
+  clearInterval(teamT);
+  let page="other";
+  if(m){renderDetail(+m[1]);page="products";}
+  else if(pm)renderPage(pm[1]);
+  else if(h==="#/checkout")renderCheckout();
+  else if(h==="#/order")renderOrder();
+  else if(h==="#/where"){renderWhere();page="where";}
+  else if(h==="#/why"){renderWhy();page="why";}
+  else if(cm||h==="#/products"){renderList();page="products";}
+  else if(h===""||h==="#"||h==="#/"){renderHome();page="home";}
+  else renderNotFound();
+  buildNav(page);
+  reveal();
+  window.scrollTo(0,0);
+}
+let cartItems=[];
+try{cartItems=(JSON.parse(localStorage.getItem("loop_cart")||"[]")||[]).filter(c=>PRODUCTS.some(p=>p.id===c.id));}catch(e){cartItems=[];}
+function saveCart(){try{localStorage.setItem("loop_cart",JSON.stringify(cartItems));}catch(e){}}
+const unit=p=>curr==="USD"?p.price:(p.mxn??Math.round(p.price*RATE_MXN));
+const fmtTotal=n=>curr==="USD"?"$"+n.toFixed(2):"MX$"+n.toLocaleString("en-US");
+function updateBadge(){$("#cartCount").textContent=cartItems.reduce((a,c)=>a+c.qty,0);saveCart();}
+function addToCart(id,ci,q){
+  const f=cartItems.find(c=>c.id===id&&c.ci===ci);
+  if(f)f.qty=Math.min(99,f.qty+q);else cartItems.push({id,ci,qty:q});
+  updateBadge();
+  if(!$("#drawer").hidden)renderCart();
+}
+function renderCart(){
+  const b=$("#dbody"),f=$("#dfoot");
+  if(!cartItems.length){b.innerHTML=`<p class="d-empty">${T("Your cart is empty.")}</p>`;f.innerHTML="";return;}
+  let total=0;
+  b.innerHTML=cartItems.map((c,i)=>{
+    const p=PRODUCTS.find(x=>x.id===c.id);
+    total+=unit(p)*c.qty;
+    return `<div class="ci"><div class="ph">${ph(p," ")}</div><div><div class="n">${T(p.name)}</div><div class="meta-s"><span class="sw-s" style="background:${p.colors[c.ci]}"></span>${money(p)}</div><div class="row"><div class="qty"><button data-a="m" data-i="${i}" aria-label="${T("Decrease")}">−</button><span>${c.qty}</span><button data-a="p" data-i="${i}" aria-label="${T("Increase")}">+</button></div><button class="rm" data-a="r" data-i="${i}">${T("Remove")}</button></div></div></div>`;
+  }).join("");
+  f.innerHTML=`<div class="total"><span>${T("Subtotal")}</span><span>${fmtTotal(total)}</span></div><button class="btn primary" id="co">${T("Checkout")}</button>`;
+  $("#co").onclick=()=>{closeCart();if(location.hash==="#/checkout")route();else location.hash="#/checkout";};
+}
+function openCart(){renderCart();$("#drawer").hidden=false;}
+function closeCart(){$("#drawer").hidden=true;}
+$("#cartBtn").onclick=openCart;
+$("#dx").onclick=closeCart;
+$("#drawer").onclick=e=>{if(e.target.id==="drawer")closeCart();};
+$("#dbody").onclick=e=>{
+  const b=e.target.closest("button[data-a]");
+  if(!b)return;
+  const i=+b.dataset.i,c=cartItems[i];
+  if(b.dataset.a==="p")c.qty=Math.min(99,c.qty+1);
+  else if(b.dataset.a==="m")c.qty=Math.max(1,c.qty-1);
+  else cartItems.splice(i,1);
+  updateBadge();renderCart();
+};
+let user=null,authTab="login";
+try{user=JSON.parse(localStorage.getItem("loop_user")||"null");}catch(e){}
+function saveUser(u){
+  user=u;
+  try{u?localStorage.setItem("loop_user",JSON.stringify(u)):localStorage.removeItem("loop_user");}catch(e){}
+  paintUser();
+}
+function paintUser(){
+  $("#acctBtn").classList.toggle("on",!!user);
+  $("#acctBtn").setAttribute("aria-label",user?T("Account"):T("Log in"));
+}
+function openAuth(t){authTab=t||"login";renderAuth();$("#modal").hidden=false;}
+function closeAuth(){$("#modal").hidden=true;}
+function renderAuth(){
+  const s=$("#sheet");
+  if(user){
+    s.innerHTML=`<button class="x" id="ax" aria-label="${T("Close")}">×</button><h2>${T("Hi,")} <span id="un"></span></h2><p class="sub" id="ue"></p><button class="btn ghost" id="out">${T("Log out")}</button>`;
+    $("#un").textContent=user.name; $("#ue").textContent=user.email;
+    $("#out").onclick=()=>{saveUser(null);closeAuth();toast(T("Logged out"));};
+  }else{
+    const su=authTab==="signup";
+    s.innerHTML=`<button class="x" id="ax" aria-label="${T("Close")}">×</button>
+    <div class="tabs"><button data-t="login" aria-selected="${!su}">${T("Log in")}</button><button data-t="signup" aria-selected="${su}">${T("Sign up")}</button></div>
+    <h2>${su?T("Create your account"):T("Welcome back")}</h2>
+    <p class="sub">${su?TF("Join {b} to save your orders and favorites.",{b:BRAND}):T("Log in to continue.")}</p>
+    <button class="g-btn" id="gbtn" type="button"><b style="color:#4285F4;font-size:18px">G</b> ${T("Continue with Google")}</button>
+    <div class="or">${T("or use email")}</div>
+    <form id="af">${su?`<label class="field"><span>${T("Name")}</span><input id="an" required autocomplete="name"></label>`:""}
+      <label class="field"><span>${T("Email")}</span><input id="ae" type="email" required autocomplete="email"></label>
+      <label class="field"><span>${T("Password")}</span><input id="ap" type="password" required minlength="6" autocomplete="${su?"new-password":"current-password"}"></label>
+      <button class="btn primary" type="submit">${su?T("Create account"):T("Log in")}</button></form>`;
+    s.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{authTab=b.dataset.t;renderAuth();});
+    $("#gbtn").onclick=()=>{saveUser({name:"Google user",email:"your-account@gmail.com"});closeAuth();toast(T("Demo: Google sign-in is simulated"));};
+    $("#af").onsubmit=e=>{
+      e.preventDefault();
+      const em=$("#ae").value.trim();
+      const name=su?$("#an").value.trim():em.split("@")[0];
+      saveUser({name,email:em});closeAuth();toast(T("Welcome,")+" "+name);
+    };
+  }
+  $("#ax").onclick=closeAuth;
+}
+$("#acctBtn").onclick=()=>openAuth("login");
+$("#modal").onclick=e=>{if(e.target.id==="modal")closeAuth();};
+
+function openSearch(){$("#search").hidden=false;$("#sq").value="";runSearch();$("#sq").focus();}
+function closeSearch(){$("#search").hidden=true;}
+function runSearch(){
+  const q=$("#sq").value.trim().toLowerCase();
+  const r=q?PRODUCTS.filter(p=>(T(p.name)+" "+p.cat+" "+T(p.desc)).toLowerCase().includes(q)):[];
+  $("#sres").innerHTML=!q?'':!r.length?`<p class="s-empty">${T("No results.")}</p>`:`<div class="s-res">${r.map(p=>`<a class="card" href="#/product/${p.id}"><div class="ph">${ph(p)}</div><div class="meta"><div class="name">${T(p.name)}</div><div>${money(p)}</div></div></a>`).join("")}</div>`;
+}
+$("#searchBtn").onclick=openSearch;
+$("#sx").onclick=closeSearch;
+$("#sq").oninput=runSearch;
+$("#sres").onclick=e=>{if(e.target.closest("a"))closeSearch();};
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeAuth();closeSearch();closeCart();}});
+updateBadge();
+renderFooter();
+let hov=false;
+document.addEventListener("mousemove",e=>{
+  const h=$("header");
+  if(e.clientY<=24){hov=true;h.classList.remove("hide");}
+  else if(hov&&e.clientY>h.offsetHeight+10){
+    hov=false;
+    if(window.scrollY>120&&$("#search").hidden)h.classList.add("hide");
+  }
+},{passive:true});
+let lastY=window.scrollY;
+window.addEventListener("scroll",()=>{
+  const y=window.scrollY,h=$("header");
+  if(y>120&&y>lastY&&$("#search").hidden&&!hov)h.classList.add("hide");
+  else if(y<lastY||y<=120)h.classList.remove("hide");
+  lastY=y;
+},{passive:true});
+document.addEventListener("click",e=>{
+  const a=e.target.closest('a[href^="#/"]');
+  if(!a)return;
+  e.preventDefault();
+  const h=a.getAttribute("href");
+  if(location.hash===h||(h==="#/"&&location.hash===""))route();else location.hash=h;
+});
+paintUser();
+function setCur(c){
+  curr=c;
+  $("#curLabel").textContent=c;
+  document.querySelectorAll("#curMenu button").forEach(b=>b.setAttribute("aria-selected",b.dataset.c===c));
+  toggleMenu(false);
+  if(location.hash==="#/checkout"&&$("#cosum"))$("#cosum").innerHTML=coSumHTML();else{const y=window.scrollY; route(); window.scrollTo(0,y);}
+  if(!$("#drawer").hidden)renderCart();
+}
+function applyStatic(){
+  document.documentElement.lang=lang;
+  const set=(sel,attr,txt)=>{const e=document.querySelector(sel);if(!e)return;if(attr==="text")e.textContent=txt;else e.setAttribute(attr,txt);};
+  set("#searchBtn","aria-label",T("Search")); set("#cartBtn","aria-label",T("Cart"));
+  set("#sq","placeholder",T("Search for your favorite Loop")); set("#sq","aria-label",T("Search products")); set("#sx","aria-label",T("Close search"));
+  set("#dx","aria-label",T("Close cart")); set("#drawer aside","aria-label",T("Cart")); set("#drawer h2","text",T("Cart"));
+  set("#nav","aria-label",T("Main"));
+  set('#curMenu button[data-c="USD"] span:last-child',"text",T("US Dollar"));
+  set('#curMenu button[data-c="MXN"] span:last-child',"text",T("Mexican Peso"));
+  set("#langLabel","text",lang.toUpperCase());
+  document.querySelectorAll("#langMenu button").forEach(b=>b.setAttribute("aria-selected",b.dataset.l===lang));
+  paintUser();
+}
+function toggleLang(open){$("#langMenu").hidden=!open;$("#langBtn").setAttribute("aria-expanded",open);}
+function setLang(l){
+  lang=l==="es"?"es":"en";
+  try{localStorage.setItem("loop_lang",lang);}catch(e){}
+  toggleLang(false);
+  applyStatic(); renderFooter();
+  const y=window.scrollY; route(); window.scrollTo(0,y);
+  if(!$("#drawer").hidden)renderCart();
+  if(!$("#modal").hidden)renderAuth();
+  if(!$("#search").hidden)runSearch();
+}
+function toggleMenu(open){
+  $("#curMenu").hidden=!open; $("#curBtn").setAttribute("aria-expanded",open);
+}
+$("#curBtn").onclick=e=>{e.stopPropagation();toggleLang(false);toggleMenu($("#curMenu").hidden);};
+$("#langBtn").onclick=e=>{e.stopPropagation();toggleMenu(false);toggleLang($("#langMenu").hidden);};
+document.querySelectorAll("#langMenu button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+document.querySelectorAll("#curMenu button").forEach(b=>b.onclick=()=>setCur(b.dataset.c));
+document.addEventListener("click",()=>{toggleMenu(false);toggleLang(false);});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){toggleMenu(false);toggleLang(false);}});
+window.addEventListener("hashchange",route);
+applyStatic();
+renderFooter();
+route();
+</script>
+</body>
+</html>
